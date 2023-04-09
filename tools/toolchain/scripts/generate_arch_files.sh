@@ -181,6 +181,21 @@ if [ "${ENABLE_CUDA}" = __TRUE__ ] && [ "${GPUVER}" != no ]; then
   LDFLAGS+=" IF_CUDA(${CUDA_LDFLAGS}|)"
 fi
 
+# MiMiC
+if [ "${ENABLE_MIMIC}" = __TRUE__ ]; then
+  check_lib -lmimic
+  add_lib_from_paths MIMIC_LDFLAGS "libmimic.*" $LIB_PATHS
+  check_lib -lmimiccommf
+  add_lib_from_paths MIMIC_LDFLAGS "libmimiccommf.*" $LIB_PATHS
+  check_lib -lmimiccomm
+  add_lib_from_paths MIMIC_LDFLAGS "libmimiccomm.*" $LIB_PATHS
+  add_include_from_paths MIMIC_FLAGS "mimic_main.mod" $INCLUDE_PATHS
+  CFLAGS+=" IF_MPI(${MIMIC_FLAGS}|)"
+  DFLAGS+=" IF_MPI(-D__MIMIC|)"
+  LIBS+=" IF_MPI(-lmimic -lmimiccommf -lmimiccomm -lstdc++|)"
+  LDFLAGS+=" IF_MPI(${MIMIC_LDFLAGS}|)"
+fi
+
 # HIP handling
 if [ "${ENABLE_HIP}" = __TRUE__ ] && [ "${GPUVER}" != no ]; then
   check_command hipcc "hip"

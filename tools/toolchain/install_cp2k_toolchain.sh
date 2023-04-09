@@ -124,6 +124,8 @@ The --enable-FEATURE options follow the rules:
                           Default = no
   --enable-hip            Turn on GPU (HIP) support.
                           Default = no
+  --enable-mimic          Turn on support for coupling to MiMiC.
+                          Default = no
   --enable-opencl         Turn on OpenCL (GPU) support. Requires the OpenCL
                           development packages and runtime. If combined with
                           --enable-cuda, OpenCL alongside of CUDA is used.
@@ -340,6 +342,7 @@ enable_tsan="__FALSE__"
 enable_opencl="__FALSE__"
 enable_cuda="__FALSE__"
 enable_hip="__FALSE__"
+enable_mimic="__FALSE__"
 export intel_classic="no"
 export GPUVER="no"
 export MPICH_DEVICE="ch3"
@@ -502,6 +505,13 @@ while [ $# -ge 1 ]; do
         exit 1
       fi
       ;;
+    --enable-mimic*)
+      enable_mimic=$(read_enable $1)
+      if [ "${enable_mimic}" = "__INVALID__" ]; then
+        report_error "invalid value for --enable-mimic, please use yes or no"
+        exit 1
+      fi
+      ;;
     --enable-opencl*)
       enable_opencl=$(read_enable $1)
       if [ $enable_opencl = "__INVALID__" ]; then
@@ -652,6 +662,7 @@ done
 export ENABLE_TSAN="${enable_tsan}"
 export ENABLE_CUDA="${enable_cuda}"
 export ENABLE_HIP="${enable_hip}"
+export ENABLE_MIMIC="${enable_mimic}"
 export ENABLE_OPENCL="${enable_opencl}"
 export ENABLE_CRAY="${enable_cray}"
 
@@ -692,6 +703,10 @@ if [ "${MPI_MODE}" = "no" ]; then
   if [ "${with_cosma}" != "__DONTUSE__" ]; then
     echo "Not using MPI, so cosma is disabled"
     with_cosma="__DONTUSE__"
+  fi
+  if [ "${enable_mimic}" != "__FALSE__" ]; then 
+    echo "Not using MPI, so MiMiC is disabled"
+    with_mimic="__FALSE__"
   fi
 else
   # if gcc is installed, then mpi needs to be installed too
