@@ -15,5 +15,6 @@
         "../swarm",
         "../motion",
         "../motion/mc",
+        "../mimic",
     ],
 }

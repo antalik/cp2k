@@ -77,7 +77,7 @@ MODULE cp2k_runs
         do_fist, do_mixed, do_nnp, do_opt_basis, do_optimize_input, do_qmmm, do_qs, do_sirius, &
         do_swarm, do_tamc, do_test, do_tree_mc, do_tree_mc_ana, driver_run, ehrenfest, &
         electronic_spectra_run, energy_force_run, energy_run, geo_opt_run, linear_response_run, &
-        mol_dyn_run, mon_car_run, negf_run, none_run, pint_run, real_time_propagation, &
+        mimic_run, mol_dyn_run, mon_car_run, negf_run, none_run, pint_run, real_time_propagation, &
         tree_mc_run, vib_anal
    USE input_cp2k,                      ONLY: create_cp2k_root_section
    USE input_cp2k_check,                ONLY: check_cp2k_input
@@ -108,6 +108,7 @@ MODULE cp2k_runs
                                               mp_comm_type,&
                                               mp_para_env_release,&
                                               mp_para_env_type
+   USE mimic_loop,                      ONLY: do_mimic_loop
    USE mscfg_methods,                   ONLY: do_mol_loop,&
                                               loop_over_molecules
    USE neb_methods,                     ONLY: neb
@@ -408,6 +409,8 @@ CONTAINS
          CALL neb(root_section, input_declaration, para_env, globenv)
       CASE (negf_run)
          CALL do_negf(force_env)
+      CASE (mimic_run)
+         CALL do_mimic_loop(force_env)
       CASE default
          CPABORT("")
       END SELECT

@@ -1,0 +1,12 @@
+{
+    "description": "Wrapper for the MiMiC routines",
+    "requires": [
+        "mimic_wrapper",
+        "../",
+        "../base",
+        "../common",
+        "../input",
+        "../mpiwrap",
+        "../subsys",
+    ],
+}

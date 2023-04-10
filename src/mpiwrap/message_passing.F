@@ -1,4 +1,4 @@
-!--------------------------------------------------------------------------------------------------!
+!!--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
 !   Copyright 2000-2023 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
@@ -29,6 +29,7 @@ MODULE message_passing
    USE machine, ONLY: m_abort
    USE mp_perf_env, ONLY: add_perf, &
                           add_mp_perf_env, rm_mp_perf_env
+   USE mimic_wrapper,   ONLY: mimic_init
 
 #include "../base/base_uses.f90"
 
@@ -150,6 +151,11 @@ MODULE message_passing
 
    ! internal reference counter used to debug communicator leaks
    INTEGER, PRIVATE, SAVE :: debug_comm_count
+
+#if defined(__MIMIC)
+   ! Stores the split world communicator to finalize a MiMiC run
+   MPI_COMM_TYPE, PRIVATE, SAVE :: mimic_comm_world
+#endif
 
    PUBLIC :: mp_comm_type
    PUBLIC :: mp_request_type
@@ -998,11 +1004,14 @@ CONTAINS
 !>      should only be called once
 ! **************************************************************************************************
       SUBROUTINE mp_world_init(mp_comm)
-         CLASS(mp_comm_type), INTENT(OUT)                     :: mp_comm
+         CLASS(mp_comm_type), INTENT(OUT)         :: mp_comm
 #if defined(__parallel)
          INTEGER                                  :: ierr
 !$       INTEGER                                  :: provided_tsl
 !$       LOGICAL                                  :: no_threading_support
+#if defined(__MIMIC)
+         INTEGER                                  :: mimic_handle
+#endif
 
 #if defined(__NO_MPI_THREAD_SUPPORT_CHECK)
          ! Hack that does not request or check MPI thread support level.
@@ -1037,6 +1046,16 @@ CONTAINS
 #endif
          debug_comm_count = 1
          mp_comm = mp_comm_world
+#if defined(__MIMIC)
+         mimic_handle = mp_comm%get_handle()
+         CALL mimic_init(mimic_handle)
+         CALL mp_comm%set_handle(mimic_handle)
+#if defined(__MPI_F08) 
+         mimic_comm_world%mpi_val = mimic_handle
+#else
+         mimic_comm_world = mimic_handle
+#endif
+#endif
          CALL mp_comm%init()
          CALL add_mp_perf_env()
       END SUBROUTINE mp_world_init
@@ -1102,7 +1121,12 @@ CONTAINS
          CHARACTER(LEN=default_string_length) :: debug_comm_count_char
 #if defined(__parallel)
          INTEGER                                  :: ierr
+
+#if defined(__MIMIC)
+         CALL mpi_barrier(mimic_comm_world, ierr)
+#else
          CALL mpi_barrier(MPI_COMM_WORLD, ierr) ! call mpi directly to avoid 0 stack pointer
+#endif
 #endif
          CALL rm_mp_perf_env()
 

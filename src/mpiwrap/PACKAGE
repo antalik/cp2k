@@ -1,5 +1,8 @@
 {
     "description": "wrappers of the mpi routines",
-    "requires": ["../base"],
+    "requires": [
+        "../base",
+        "../mimic/mimic_wrapper"
+    ],
     "implicit": "MPI_.*",
 }

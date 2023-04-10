@@ -28,6 +28,7 @@ MODULE input_cp2k_force_eval
    USE input_cp2k_eip,                  ONLY: create_eip_section
    USE input_cp2k_embed,                ONLY: create_embed_section
    USE input_cp2k_mixed,                ONLY: create_mix_section
+   USE input_cp2k_mimic,                ONLY: create_mimic_section
    USE input_cp2k_mm,                   ONLY: create_mm_section
    USE input_cp2k_nnp,                  ONLY: create_nnp_section
    USE input_cp2k_properties_dft,       ONLY: create_properties_section
@@ -75,7 +76,7 @@ CONTAINS
       CALL section_create(section, __LOCATION__, name="force_eval", &
                           description="parameters needed to calculate energy and forces and"// &
                           " describe the system you want to analyze.", &
-                          n_keywords=1, n_subsections=10, repeats=.TRUE.)
+                          n_keywords=1, n_subsections=11, repeats=.TRUE.)
 
       NULLIFY (subsection)
       NULLIFY (keyword)
@@ -155,6 +156,10 @@ CONTAINS
       CALL section_release(subsection)
 
       CALL create_qmmm_section(subsection)
+      CALL section_add_subsection(section, subsection)
+      CALL section_release(subsection)
+
+      CALL create_mimic_section(subsection)
       CALL section_add_subsection(section, subsection)
       CALL section_release(subsection)
 

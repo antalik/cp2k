@@ -219,6 +219,9 @@ CONTAINS
 #if defined(__OFFLOAD_CUDA)
       flags = TRIM(flags)//" offload_cuda"
 #endif
+#if defined(__MIMIC)
+      flags = TRIM(flags)//" mimic"
+#endif
 #if defined(__OFFLOAD_HIP)
       flags = TRIM(flags)//" offload_hip"
 #endif
